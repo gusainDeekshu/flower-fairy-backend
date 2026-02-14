@@ -1,0 +1,11 @@
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  price       Float
+  image       String
+  category    String
+  rating      Float    @default(4.8)
+  orderCount  Int      @default(0)
+  isMidnight  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}

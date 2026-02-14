@@ -1,0 +1,12 @@
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  price       Float
+  image       String   // Cloudinary/S3 URL
+  category    String   // Birthday, Anniversary
+  rating      Float    @default(4.8)
+  orderCount  Int      @default(0)
+  isMidnight  Boolean  @default(false)
+  stock       Int      @default(100)
+  createdAt   DateTime @default(now())
+}

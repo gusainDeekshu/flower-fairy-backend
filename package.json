@@ -18,8 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "build:schema": "prisma-import --schema prisma/schema.prisma --output prisma/deployment-schema.prisma",
-    "postinstall": "npm run build:schema && prisma generate --schema prisma/deployment-schema.prisma",
+    "build:schema": "prisma-import --schemas prisma/schema.prisma --output prisma/deployment-schema.prisma",
+  "postinstall": "pnpm run build:schema && prisma generate --schema prisma/deployment-schema.prisma",
     "db:deploy": "prisma-import --schema prisma/schema.prisma --output prisma/deploy.prisma && prisma migrate deploy --schema prisma/deploy.prisma"
   },
   "dependencies": {
@@ -27,12 +27,16 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.2.6",
+    "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^7.4.0",
     "cache-manager": "^7.2.8",
     "cache-manager-redis-yet": "^5.1.5",
     "redis": "^5.10.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "swagger": "^0.7.5",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

@@ -1,11 +1,22 @@
-model Product {
-  id          String   @id @default(cuid())
-  name        String
-  price       Float
-  image       String
-  category    String
-  rating      Float    @default(4.8)
-  orderCount  Int      @default(0)
-  isMidnight  Boolean  @default(false)
-  createdAt   DateTime @default(now())
+model Order {
+  id            String        @id @default(cuid())
+  storeId       String
+  store         Store         @relation(fields: [storeId], references: [id])
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  totalAmount   Float
+  status        String        // confirmed, out_for_delivery, delivered
+  paymentStatus String        // unpaid, paid
+  deliveryDate  DateTime?
+  transactions  Transaction[]
+  createdAt     DateTime      @default(now())
+}
+
+model Transaction {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  gateway    String   // UPI, Razorpay
+  status     String
+  rawPayload Json?    // Debug failures
 }

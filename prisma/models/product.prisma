@@ -1,9 +1,19 @@
-// prisma/models/product.prisma
 model Product {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
+  storeId     String
+  store       Store            @relation(fields: [storeId], references: [id])
   name        String
-  price       Float
-  image       String
-  category    String   // e.g., "Bestsellers"
-  isMidnight  Boolean  @default(false)
+  description String?
+  basePrice   Float
+  category    String           
+  variants    ProductVariant[]
+}
+
+model ProductVariant {
+  id            String  @id @default(cuid())
+  productId     String
+  product       Product @relation(fields: [productId], references: [id])
+  name          String  // e.g., "XL Red" or "1kg Eggless"
+  priceModifier Float   @default(0)
+  stock         Int     @default(0)
 }

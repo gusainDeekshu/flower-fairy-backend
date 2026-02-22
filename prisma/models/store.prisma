@@ -1,0 +1,13 @@
+model Store {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  industry      String         // e.g., "bakery", "clothing"
+  paymentConfig Json?          // Store-specific keys
+  createdAt     DateTime       @default(now())
+  
+  products      Product[]
+  customers     Customer[]
+  orders        Order[]
+  shippingRules ShippingRule[]
+}

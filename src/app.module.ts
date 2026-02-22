@@ -5,6 +5,7 @@ import { ProductsModule } from './products/products.module';
 import { PrismaModule } from './prisma/prisma.module'; // Ensure you created this in the previous step
 import { ThrottlerModule } from '@nestjs/throttler';
 import { redisStore } from 'cache-manager-redis-yet';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     }),
     PrismaModule,
     ProductsModule,
+    PaymentsModule,
     // Configuration for global caching
     CacheModule.register({
       isGlobal: true,

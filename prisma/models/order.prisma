@@ -1,3 +1,12 @@
+// Location: prisma/models/order.prisma
+
+// Add this enum to the file
+enum PaymentProvider {
+  STRIPE
+  RAZORPAY
+  PHONEPE
+}
+
 model Order {
   id            String        @id @default(cuid())
   storeId       String
@@ -10,6 +19,9 @@ model Order {
   deliveryDate  DateTime?
   transactions  Transaction[]
   createdAt     DateTime      @default(now())
+  // --- ADD THESE NEW FIELDS ---
+  paymentProvider   PaymentProvider?
+  paymentProviderId String?         @unique // Stripe Session ID, Razorpay Order ID, or PhonePe TXN ID
 }
 
 model Transaction {

@@ -3,6 +3,8 @@ model ShippingRule {
   storeId        String
   store          Store   @relation(fields: [storeId], references: [id])
   pincode        String
-  deliveryCharge Float
+  deliveryCharge Float  
   isOperational  Boolean @default(true)
+
+  @@index([storeId, pincode])
 }

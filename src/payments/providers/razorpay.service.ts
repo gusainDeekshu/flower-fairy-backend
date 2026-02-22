@@ -1,5 +1,4 @@
-// Location: src/payments/providers/razorpay.service.ts
-
+// src/payments/providers/razorpay.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
@@ -7,23 +6,21 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class RazorpayService {
-  private razorpay: any;
+  constructor(private prisma: PrismaService) {}
 
-  constructor(private prisma: PrismaService) {
-    this.razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-  }
+  async createOrder(orderId: string, amount: number, currency: string, keys: any = {}) {
+    const key_id = keys.razorpayKeyId || process.env.RAZORPAY_KEY_ID;
+    const key_secret = keys.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
+    
+    const razorpay = new Razorpay({ key_id, key_secret });
 
-  async createOrder(orderId: string, amount: number, currency: string) {
     const options = {
-      amount, // Amount in paise
+      amount: Math.round(amount * 100),
       currency,
       receipt: orderId,
     };
 
-    const order = await this.razorpay.orders.create(options);
+    const order = await razorpay.orders.create(options);
 
     await this.prisma.order.update({
       where: { id: orderId },
@@ -34,13 +31,14 @@ export class RazorpayService {
       orderId: order.id, 
       amount: order.amount, 
       currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID // Needed by frontend to initialize SDK
+      keyId: key_id 
     };
   }
 
-  verifySignature(razorpayOrderId: string, razorpayPaymentId: string, signature: string) {
+  verifySignature(razorpayOrderId: string, razorpayPaymentId: string, signature: string, keys: any = {}) {
+    const key_secret = keys.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
     const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET as string)
+      .createHmac('sha256', key_secret as string)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
       .digest('hex');
 

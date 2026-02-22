@@ -1,12 +1,117 @@
 // prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-// The merger will find files in the models directory
-//
+// --- ENUMS ---
+enum Role {
+  ADMIN
+  USER
+}
+
+enum PaymentProvider {
+  STRIPE
+  RAZORPAY
+  PHONEPE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// --- MODELS ---
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Store {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  industry      String
+  paymentConfig Json?          
+  themeConfig   Json?          
+  createdAt     DateTime       @default(now())
+  
+  products      Product[]
+  orders        Order[]
+  shippingRules ShippingRule[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          String           @id @default(cuid())
+  storeId     String
+  store       Store            @relation(fields: [storeId], references: [id])
+  name        String
+  slug        String           @unique
+  description String?
+  price       Float            
+  image       String
+  categoryId  String
+  category    Category         @relation(fields: [categoryId], references: [id])
+  variants    ProductVariant[]
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+
+  @@index([storeId])
+  @@index([categoryId])
+}
+
+model ProductVariant {
+  id            String  @id @default(cuid())
+  productId     String
+  product       Product @relation(fields: [productId], references: [id])
+  name          String  
+  priceModifier Float   @default(0)
+  stock         Int     @default(0)
+}
+
+model Order {
+  id                String           @id @default(cuid())
+  storeId           String
+  store             Store            @relation(fields: [storeId], references: [id])
+  userId            String
+  user              User             @relation(fields: [userId], references: [id])
+  totalAmount       Float            
+  status            OrderStatus      @default(PENDING)
+  items             Json             
+  paymentProvider   PaymentProvider?
+  paymentProviderId String?          @unique 
+  createdAt         DateTime         @default(now())
+
+  @@index([storeId])
+  @@index([userId])
+}
+
+model ShippingRule {
+  id             String  @id @default(cuid())
+  storeId        String
+  store          Store   @relation(fields: [storeId], references: [id])
+  pincode        String
+  deliveryCharge Float   
+  isOperational  Boolean @default(true)
+
+  @@index([storeId, pincode])
+}

@@ -1,34 +1,16 @@
-// Location: prisma/models/order.prisma
-
-// Add this enum to the file
-enum PaymentProvider {
-  STRIPE
-  RAZORPAY
-  PHONEPE
-}
-
 model Order {
-  id            String        @id @default(cuid())
-  storeId       String
-  store         Store         @relation(fields: [storeId], references: [id])
-  customerId    String
-  customer      Customer      @relation(fields: [customerId], references: [id])
-  totalAmount   Float
-  status        String        // confirmed, out_for_delivery, delivered
-  paymentStatus String        // unpaid, paid
-  deliveryDate  DateTime?
-  transactions  Transaction[]
-  createdAt     DateTime      @default(now())
-  // --- ADD THESE NEW FIELDS ---
+  id                String          @id @default(cuid())
+  storeId           String
+  store             Store           @relation(fields: [storeId], references: [id])
+  userId            String
+  user              User            @relation(fields: [userId], references: [id])
+  totalAmount       Float          
+  status            OrderStatus     @default(PENDING)
+  items             Json            // Snapshot of products/prices at time of purchase
   paymentProvider   PaymentProvider?
-  paymentProviderId String?         @unique // Stripe Session ID, Razorpay Order ID, or PhonePe TXN ID
-}
+  paymentProviderId String?         @unique // Stripe Session ID or Razorpay Order ID
+  createdAt         DateTime        @default(now())
 
-model Transaction {
-  id         String   @id @default(cuid())
-  orderId    String
-  order      Order    @relation(fields: [orderId], references: [id])
-  gateway    String   // UPI, Razorpay
-  status     String
-  rawPayload Json?    // Debug failures
+  @@index([storeId])
+  @@index([userId])
 }

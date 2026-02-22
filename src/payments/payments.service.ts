@@ -1,9 +1,11 @@
-// Location: src/payments/payments.service.ts
+// src/payments/payments.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; //
+import { PrismaService } from '../prisma/prisma.service'; 
 import { StripeService } from './providers/stripe.service';
 import { RazorpayService } from './providers/razorpay.service';
 import { PhonePeService } from './providers/phonepe.service';
+
+export type PaymentGateway = 'STRIPE' | 'RAZORPAY' | 'PHONEPE';
 
 @Injectable()
 export class PaymentsService {
@@ -14,23 +16,27 @@ export class PaymentsService {
     private phonepeService: PhonePeService,
   ) {}
 
-  async initiateCheckout(orderId: string, provider: 'STRIPE' | 'RAZORPAY' | 'PHONEPE', userId: string) {
-    // Uses the 'order' model from your modular prisma/models/order.prisma
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+  async initiateCheckout(orderId: string, provider: PaymentGateway, userId: string) {
+    const order = await this.prisma.order.findUnique({ 
+      where: { id: orderId },
+      include: { store: true } 
+    });
     
     if (!order) throw new BadRequestException('Order not found');
     
-    // Amount should be in smallest currency unit (paise/cents)
     const amount = order.totalAmount; 
     const currency = 'INR';
 
+    // Extract tenant-specific API keys (White-label)
+    const storePaymentKeys = (order.store.paymentConfig as Record<string, string>) || {};
+
     switch (provider) {
       case 'STRIPE':
-        return this.stripeService.createCheckout(order.id, amount, currency);
+        return this.stripeService.createCheckout(order.id, amount, currency, storePaymentKeys);
       case 'RAZORPAY':
-        return this.razorpayService.createOrder(order.id, amount, currency);
+        return this.razorpayService.createOrder(order.id, amount, currency, storePaymentKeys);
       case 'PHONEPE':
-        return this.phonepeService.createPayment(order.id, amount, userId);
+        return this.phonepeService.createPayment(order.id, amount, userId, storePaymentKeys);
       default:
         throw new BadRequestException('Invalid provider');
     }
@@ -39,7 +45,7 @@ export class PaymentsService {
   async markOrderPaid(paymentId: string) {
     return await this.prisma.order.update({
       where: { paymentProviderId: paymentId },
-      data: { status: 'PAID' }, //
+      data: { status: 'PAID' }, 
     });
   }
 }

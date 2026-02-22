@@ -8,14 +8,13 @@
 //
 
 // prisma/schema.prisma
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client" // <-- ADD THIS LINE
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// The merger will find files in the models directory
-//

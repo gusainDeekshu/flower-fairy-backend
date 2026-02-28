@@ -5,13 +5,16 @@ import { ProductsService } from './products.service';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+ 
   @Get('catalog/:slug')
   async getCatalog(@Param('slug') slug: string) {
+    console.log(`Fetching catalog for store: ${slug}`);
     return this.productsService.getStoreCatalog(slug);
   }
 
   @Get()
   async findAll(@Query('category') category?: string) {
+    console.log(`Fetching products${category ? ` in category: ${category}` : ''}`);
     // 1. Fetch the catalog (cast as 'any' or your Store interface to access properties)
     const catalog = await this.productsService.getStoreCatalog('flower-fairy-dehradun') as any;
     

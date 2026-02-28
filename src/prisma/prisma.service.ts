@@ -7,19 +7,21 @@ import { Pool } from 'pg';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    // 1. Setup the connection pool using your env variable
     const connectionString = process.env.DATABASE_URL;
     const pool = new Pool({ connectionString });
-    
-    // 2. Initialize the Postgres adapter
     const adapter = new PrismaPg(pool);
-
-    // 3. Pass the adapter to the parent PrismaClient constructor
     super({ adapter });
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      console.log('✅ PostgreSQL connected successfully');
+    } catch (error) {
+      console.error('❌ PostgreSQL connection failed:', error.message);
+      // In production, exit if the DB is unreachable during startup
+      process.exit(1); 
+    }
   }
 
   async onModuleDestroy() {

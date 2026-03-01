@@ -10,10 +10,13 @@ import { CommonCacheModule } from './common/cache/cache.module'; // Import your 
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 import { PaymentsModule } from './payments/payments.module';
+import { AuthModule } from './auth/auth.module';
 
 // Health Components
 import { HealthController } from './health/health.controller';
 import { PrismaHealthIndicator } from './prisma/prisma.health';
+import { AdminStoreController } from './admin/store.controller';
+import { AdminProductsController } from './admin/products.controller';
 
 @Module({
   imports: [
@@ -26,10 +29,12 @@ import { PrismaHealthIndicator } from './prisma/prisma.health';
     TerminusModule,
 
     // 3. Security: Rate Limiting
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100, // Limit each IP to 100 requests per minute
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100, // Limit each IP to 100 requests per minute
+      },
+    ]),
 
     // 4. Redis Caching Configuration
     NestCacheModule.registerAsync({
@@ -46,13 +51,18 @@ import { PrismaHealthIndicator } from './prisma/prisma.health';
         }),
       }),
     }),
-CommonCacheModule,
+    CommonCacheModule,
     // 5. Business Logic Modules
     PrismaModule,
     ProductsModule,
     PaymentsModule,
+    AuthModule,
   ],
-  controllers: [HealthController],
+  controllers: [
+    HealthController,
+    AdminProductsController, // Add these
+    AdminStoreController,
+  ],
   providers: [PrismaHealthIndicator],
 })
 export class AppModule {}

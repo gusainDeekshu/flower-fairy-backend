@@ -5,11 +5,11 @@ import { defineConfig, env } from "@prisma/config";
 export default defineConfig({
   schema: "prisma/schema.prisma",
   datasource: {
-    // env() is a helper that throws a clear error if the variable is missing
     url: env("DATABASE_URL"),
   },
   migrations: {
     path: "prisma/migrations",
-    seed: 'ts-node prisma/seed.ts',
+    // Adding -r dotenv/config ensures the seed script sees your DB_URL immediately
+    seed: 'ts-node -r dotenv/config prisma/seed.ts',
   }
 });

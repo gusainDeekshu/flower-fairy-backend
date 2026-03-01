@@ -1,26 +1,15 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+// src/auth/guards/admin.guard.ts
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const token = request.headers.authorization?.split(' ')[1];
-
-    if (!token) throw new UnauthorizedException('No bouquet for you! (Login required)');
-
-    try {
-      const payload = await this.jwtService.verifyAsync(token);
-      // Check if the user has the ADMIN role defined in your Prisma ENUM
-      if (payload.role !== 'ADMIN') {
-        throw new UnauthorizedException('Staff only area!');
-      }
-      request.user = payload;
-      return true;
-    } catch {
-      throw new UnauthorizedException('Session expired.');
+  canActivate(context: ExecutionContext): boolean {
+    const { user } = context.switchToHttp().getRequest();
+    
+    if (user?.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
     }
+    
+    return true;
   }
 }

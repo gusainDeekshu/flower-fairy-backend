@@ -28,26 +28,29 @@ enum OrderStatus {
   CANCELLED
 }
 
-// --- MODELS ---
+// models
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   password  String
   name      String
-  role      Role     @default(USER)
+  role      Role      @default(USER)
   orders    Order[]
-  createdAt DateTime @default(now())
+  // Add these two lines to satisfy the relation requirements
+  accounts  Account[]
+  sessions  Session[]
+  createdAt DateTime  @default(now())
 }
 
 model Store {
-  id            String         @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String
-  slug          String         @unique
+  slug          String   @unique
   industry      String
-  paymentConfig Json?          
-  themeConfig   Json?          
-  createdAt     DateTime       @default(now())
-  
+  paymentConfig Json?
+  themeConfig   Json?
+  createdAt     DateTime @default(now())
+
   products      Product[]
   orders        Order[]
   shippingRules ShippingRule[]
@@ -67,7 +70,7 @@ model Product {
   name        String
   slug        String           @unique
   description String?
-  price       Float            
+  price       Float
   image       String
   categoryId  String
   category    Category         @relation(fields: [categoryId], references: [id])
@@ -83,7 +86,7 @@ model ProductVariant {
   id            String  @id @default(cuid())
   productId     String
   product       Product @relation(fields: [productId], references: [id])
-  name          String  
+  name          String
   priceModifier Float   @default(0)
   stock         Int     @default(0)
 }
@@ -94,11 +97,11 @@ model Order {
   store             Store            @relation(fields: [storeId], references: [id])
   userId            String
   user              User             @relation(fields: [userId], references: [id])
-  totalAmount       Float            
+  totalAmount       Float
   status            OrderStatus      @default(PENDING)
-  items             Json             
+  items             Json
   paymentProvider   PaymentProvider?
-  paymentProviderId String?          @unique 
+  paymentProviderId String?          @unique
   createdAt         DateTime         @default(now())
 
   @@index([storeId])
@@ -110,8 +113,44 @@ model ShippingRule {
   storeId        String
   store          Store   @relation(fields: [storeId], references: [id])
   pincode        String
-  deliveryCharge Float   
+  deliveryCharge Float
   isOperational  Boolean @default(true)
 
   @@index([storeId, pincode])
+}
+
+// Add these to your schema.prisma
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

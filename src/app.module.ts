@@ -17,6 +17,9 @@ import { HealthController } from './health/health.controller';
 import { PrismaHealthIndicator } from './prisma/prisma.health';
 import { AdminStoreController } from './admin/store.controller';
 import { AdminProductsController } from './admin/products.controller';
+import { UsersModule } from './users/users.module';
+import { UsersController } from './users/users.controller';
+import { UsersService } from './users/users.service';
 
 @Module({
   imports: [
@@ -57,12 +60,14 @@ import { AdminProductsController } from './admin/products.controller';
     ProductsModule,
     PaymentsModule,
     AuthModule,
+    UsersModule,
   ],
   controllers: [
     HealthController,
     AdminProductsController, // Add these
     AdminStoreController,
+    UsersController
   ],
-  providers: [PrismaHealthIndicator],
+  providers: [PrismaHealthIndicator,UsersService],
 })
 export class AppModule {}

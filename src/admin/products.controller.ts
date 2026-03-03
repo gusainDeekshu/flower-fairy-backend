@@ -1,8 +1,8 @@
 // flower-fairy-backend/src/admin/products.controller.ts
 import { Controller, Put, Post, Body, Param, UseGuards, BadRequestException, Logger, Req } from '@nestjs/common'; // Added Post
 import { PrismaService } from '../prisma/prisma.service';
-import { AdminGuard } from 'src/auth/guards/admin.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Controller('admin/products')
 @UseGuards(AuthGuard('jwt'), AdminGuard)

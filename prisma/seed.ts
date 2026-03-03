@@ -16,7 +16,7 @@ async function main() {
 
   // --- 1. Create Admin User ---
   // IMPORTANT: Replace this with your actual Gmail address for Google Login testing
-  const adminEmail = 'gusaindeekshant@gmail.com@gmail.com'; 
+  const adminEmail = 'gusaindeekshant@gmail.com'; 
   const hashedPassword = await bcrypt.hash('admin123', 10);
 
   const adminUser = await prisma.user.upsert({

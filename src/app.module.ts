@@ -20,6 +20,7 @@ import { AdminProductsController } from './admin/products.controller';
 import { UsersModule } from './users/users.module';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
+import { CategoriesController } from './categories/categories.controller';
 
 @Module({
   imports: [
@@ -66,7 +67,8 @@ import { UsersService } from './users/users.service';
     HealthController,
     AdminProductsController, // Add these
     AdminStoreController,
-    UsersController
+    UsersController,
+    CategoriesController
   ],
   providers: [PrismaHealthIndicator,UsersService],
 })

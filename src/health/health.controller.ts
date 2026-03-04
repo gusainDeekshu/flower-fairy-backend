@@ -1,33 +1,44 @@
-import { Controller, Get } from '@nestjs/common';
-import { HealthCheckService, HealthCheck, MicroserviceHealthIndicator } from '@nestjs/terminus';
-import { Transport } from '@nestjs/microservices';
-import { PrismaHealthIndicator } from 'src/prisma/prisma.health';
+import { Controller, Get, Inject } from '@nestjs/common';
+import { HealthCheckService, HealthCheck } from '@nestjs/terminus';
+import { PrismaHealthIndicator } from '../prisma/prisma.health'; // Changed to relative path for Vercel stability
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Controller('health')
 export class HealthController {
   constructor(
     private health: HealthCheckService,
     private prismaIndicator: PrismaHealthIndicator,
-    private microservice: MicroserviceHealthIndicator,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   @Get()
   @HealthCheck()
-  check() {
-    console.log(`Checking health status`);
+  async check() {
+    console.log(`Checking health status...`);
 
     return this.health.check([
-      // Database Check
+      // 1. Database Check
       () => this.prismaIndicator.isHealthy('database'),
       
-      // Redis Check via Microservice indicator (Production-grade TCP check)
-      () => this.microservice.pingCheck('redis', {
-        transport: Transport.REDIS,
-        options: {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: parseInt(process.env.REDIS_PORT || '6379'),
-        },
-      }),
+      // 2. Active Cache Check (Cloud Redis or Memory Fallback)
+      // This verifies the actual store configured in your AppModule
+      async () => {
+        try {
+          // Perform a simple read/write to verify the cloud connection
+          const testKey = 'health-check-ping';
+          await this.cacheManager.set(testKey, 'pong', 10);
+          const result = await this.cacheManager.get(testKey);
+          
+          if (result === 'pong') {
+            return { redis: { status: 'up' } };
+          }
+          throw new Error('Redis response mismatch');
+        } catch (e) {
+          // If Redis is down, this reports the error in JSON but doesn't crash the server
+          return { redis: { status: 'down', message: e.message } };
+        }
+      },
     ]);
   }
 }

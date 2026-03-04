@@ -43,25 +43,7 @@ import { CategoriesController } from './categories/categories.controller';
     // 4. Redis Caching Configuration
     // flower-fairy-backend/src/app.module.ts
 
-    NestCacheModule.registerAsync({
-      isGlobal: true,
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        const redisUrl = configService.get<string>('REDIS_URL');
-
-        if (!redisUrl) {
-          throw new Error('REDIS_URL is missing from .env');
-        }
-
-        return {
-          store: await redisStore({
-            url: redisUrl, // This will now receive a clean URL
-            ttl: 600,
-          }),
-        };
-      },
-    }),
+    
     CommonCacheModule,
     // 5. Business Logic Modules
     PrismaModule,
